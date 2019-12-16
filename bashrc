@@ -330,6 +330,8 @@ new()
 
 alias sshpass='ssh -o PreferredAuthentications=password -o PubkeyAuthentication=no'
 
+alias ggrep='git grep'
+
 myhelp()
 {
     echo "new         - open a new yakuake terminal in the same PWD."
