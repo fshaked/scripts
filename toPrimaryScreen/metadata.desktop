@@ -1,0 +1,20 @@
+[Desktop Entry]
+Name=To Primary Screen
+Comment=Move all windows to the primary screen
+
+Type=Service
+Icon=preferences-system-windows-script-test
+
+X-Plasma-API=javascript
+X-Plasma-MainScript=code/main.js
+
+X-KDE-PluginInfo-Author=Me
+X-KDE-PluginInfo-Email=me@my.com
+X-KDE-PluginInfo-Name=toPrimaryScreen
+X-KDE-PluginInfo-Version=0.1
+
+X-KDE-PluginInfo-Depends=
+X-KDE-PluginInfo-License=GPL
+X-KDE-ServiceTypes=KWin/Script
+X-KDE-Library=kcm_kwin4_genericscripted
+X-KDE-PluginKeyword=toPrimaryScreen
