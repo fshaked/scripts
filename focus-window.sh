@@ -7,15 +7,21 @@ CLASS="$2"
 # If a window of $CLASS already exists, toggle between minimized and focused;
 # if no such window exists, call $CMD.
 
-WINDOW="$(xdotool search --limit 1 --class "$CLASS")"
-FOUND="$?"
-if [ "$FOUND" -ne 0 ]; then
+WINDOWS=($(xdotool search --class "$CLASS"))
+
+if [ "${#WINDOWS[@]}" -eq 0 ]; then
     $CMD
     exit 0
 fi
 
-if [ "$WINDOW" -eq "$(xdotool getwindowfocus)" ]; then
-  xdotool windowminimize "$WINDOW"
+# if [ "${#WINDOWS[@]}" -gt 1 ]; then
+#     kdialog --sorry "Multiple windows with class \"$CLASS\""
+#     exit 1
+# fi
+
+if [[ " ${WINDOWS[@]} " =~ " $(xdotool getwindowfocus) " ]]; then
+# if [ "${WINDOWS[0]}" -eq "$(xdotool getwindowfocus)" ]; then
+  xdotool search --class "$CLASS" windowminimize %@
 else
-  xdotool windowactivate "$WINDOW"
+  xdotool search --class "$CLASS" windowactivate %@
 fi
