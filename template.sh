@@ -1,4 +1,5 @@
 #!/bin/bash
+
 # extglob is needed for "@(-o|--opt=)"
 shopt -s extglob
 
@@ -10,11 +11,19 @@ fi
 usage()
 {
     cat <<ENDUSAGE
-Usage: $CMDNAME CMD CLASS
-Focus or minimize windows of CLASS. If no such window exists, use CMD to create one.
+Usage: $CMDNAME [OPTION]... [--] ARG1 ARG2
+Descritopn...
 
 -h, --help                  display this message.
+-o, --opt OPT               (default: ???) description...
 ENDUSAGE
+}
+
+missingarg()
+{
+    echo "${CMDNAME}: option requires an argument -- '$1'"
+    usage
+    exit 2
 }
 
 parse_options()
@@ -25,6 +34,19 @@ parse_options()
                 shift
                 usage
                 exit 0
+                ;;
+            -o|--opt)
+                if [ $# -gt 1 ] ; then
+                    OPT="$2"
+                    shift 2
+                else
+                    missingarg "$1"
+                    shift
+                fi
+                ;;
+            -o*|--opt=*)
+                OPT+=("${1#@(-o|--opt=)}")
+                shift
                 ;;
             *)
                 break
@@ -37,8 +59,8 @@ parse_options()
 parse_args()
 {
     if [ $# -eq 2 ] ; then
-        CMD="$1"
-        CLASS="$2"
+        ARG1="$1"
+        ARG2="$2"
         shift 2
     else
         usage
@@ -59,29 +81,14 @@ parse_cmd()
     done
     parse_options "${OPTIONS[@]}"
     parse_args "${OPTIONS[@]}" "$@"
+
+    # Default values:
+    : ${OPT:="???"}
 }
 
 main()
 {
-    WINDOWS=($(xdotool search --class "$CLASS"))
-
-    if [ "${#WINDOWS[@]}" -eq 0 ]; then
-        $CMD
-        exit 0
-    fi
-
-    # if [ "${#WINDOWS[@]}" -gt 1 ]; then
-    #     kdialog --sorry "Multiple windows with class \"$CLASS\""
-    #     exit 1
-    # fi
-
-    if [[ " ${WINDOWS[@]} " =~ " $(xdotool getwindowfocus) " ]]; then
-    # if [ "${WINDOWS[0]}" -eq "$(xdotool getwindowfocus)" ]; then
-        xdotool search --class "$CLASS" windowminimize %@
-    else
-        xdotool search --class "$CLASS" windowactivate %@
-    fi
 }
 
-parse_args "$@"
+parse_cmd "$@"
 main
