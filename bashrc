@@ -5,9 +5,7 @@
 
 shopt -s extglob
 
-if [ -d "$HOME/scripts" ]; then
-    PATH="$HOME/scripts:$PATH"
-fi
+PATH="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd ):$PATH"
 
 # ANSI color codes
 RS="\[\033[0m\]"    # reset
@@ -331,6 +329,12 @@ new()
 alias sshpass='ssh -o PreferredAuthentications=password -o PubkeyAuthentication=no'
 
 alias ggrep='git grep'
+
+git-config-sflur()
+{
+    git config user.name "Shaked Flur"
+    git config user.email sflur@google.com
+}
 
 myhelp()
 {
