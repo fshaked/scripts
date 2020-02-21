@@ -86,7 +86,6 @@ alias aptup="-s -- eval 'apt update && apt upgrade --auto-remove'"
 alias ll='ls -alhF'
 alias l='ls -lhF'
 alias rm='rm -i'
-alias x='exit'
 alias vnc='x11vnc -localhost -usepw -forever'
 alias ksvn='kdesvn ./'
 alias beep='paplay ~/beep.wav'
@@ -105,55 +104,20 @@ function sdu() { du --human-readable --max-depth 1 --all --total "$@" | sort -h;
 
 ff() { find -L -name "$1"; }
 
-findin()
-{
-    while [ $# -gt 0 ] ; do
-        case "$1" in
-            --)
-                shift
-                break
-                ;;
-            *)
-                if [ "${FILES_SFX}" ] ; then
-                    local FILES_SFX="${FILES_SFX}\\|$1"
-                else
-                    local FILES_SFX="$1"
-                fi
-                ;;
-        esac
-
-        shift
-    done
-
-    while [ $# -gt 0 ] ; do
-        if [ "${PATTERN}" ] ; then
-            local PATTERN="${PATTERN}|($1)"
-        else
-            local PATTERN="($1)"
-        fi
-        shift
-    done
-
-    find -regex "^.*\\.\\(${FILES_SFX}\\)\$" -exec grep --color --with-filename --line-number --extended-regexp --regexp="$PATTERN" '{}' \;
-    # echo "sfx: ${FILES_SFX}"
-    # echo "pattern: $PATTERN"
-}
-
 findlemdef()
 {
-    local LET_PATTERN="^[[:space:]]*let[[:space:]]*($1)([[:space:]].*)?[[:space:]]*="
-    local TYPE_PATTERN="^[[:space:]]*type[[:space:]]*($1)[[:space:]]*="
-    find -regex "^.*\\.\\(lem\\)\$" -exec grep --color --with-filename --line-number --after-context 10 --extended-regexp --regexp="$LET_PATTERN" --regexp="$TYPE_PATTERN" '{}' \;
-    #findin lem -- "$PATTERN"
+    local LET_PATTERN="^[[:space:]]*let[[:space:]]*($1)([[:space:]]|$)"
+    local TYPE_PATTERN="^[[:space:]]*type[[:space:]]*($1)([[:space:]]|$)"
+    findin.sh -g --after-context 10 \; -n "*.lem" -- "$LET_PATTERN" "$TYPE_PATTERN"
 }
 
-alias findh='findin h hpp --'
-alias findc='findin c cpp --'
-alias findlem='findin lem --'
-alias findml='findin ml mli --'
-alias findm='findin lem ml mli --'
-alias findsail='findin sail --'
-alias findtex='findin tex --'
+alias findh='findin.sh -n "*.h" -n "*.hpp" --'
+alias findc='findin.sh -n "*.c" -n "*.cpp" --'
+alias findlem='findin.sh -n "*.lem" --'
+alias findml='findin.sh -n "*.ml" -n "*.mli" --'
+alias findm='findin.sh -n "*.lem" -n "*.ml" -n "*.mli" --'
+alias findsail='findin.sh -n "*.sail" --'
+alias findtex='findin.sh -n "*.tex" --'
 
 findhard()
 {

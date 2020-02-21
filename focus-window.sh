@@ -2,8 +2,13 @@
 # extglob is needed for "@(-o|--opt=)"
 shopt -s extglob
 
+inodeof()
+{
+    [ -z "$1" ] || stat -c '%i' "$1"
+}
+
 CMDNAME="${0##*/}"
-if [ "$(which "$CMDNAME")" != "$(realpath "$0")" ] ; then
+if [ "$(inodeof "$(which "$CMDNAME")")" != "$(inodeof "$0")" ] ; then
     CMDNAME="$0"
 fi
 

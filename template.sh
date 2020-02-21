@@ -3,8 +3,13 @@
 # extglob is needed for "@(-o|--opt=)"
 shopt -s extglob
 
+inodeof()
+{
+    [ -z "$1" ] || stat -c '%i' "$1"
+}
+
 CMDNAME="${0##*/}"
-if [ "$(which "$CMDNAME")" != "$(realpath "$0")" ] ; then
+if [ "$(inodeof "$(which "$CMDNAME")")" != "$(inodeof "$0")" ] ; then
     CMDNAME="$0"
 fi
 
@@ -45,7 +50,8 @@ parse_options()
                 fi
                 ;;
             -o*|--opt=*)
-                OPT+=("${1#@(-o|--opt=)}")
+                # requires 'shopt -s extglob'
+                OPT="${1#@(-o|--opt=)}"
                 shift
                 ;;
             *)
@@ -88,6 +94,7 @@ parse_cmd()
 
 main()
 {
+    echo TODO
 }
 
 parse_cmd "$@"
