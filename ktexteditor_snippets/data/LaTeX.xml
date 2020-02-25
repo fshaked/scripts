@@ -1,0 +1,25 @@
+<snippets authors="Shaked Flur" name="LaTeX" namespace="latex" filetypes="LaTeX" license="BSD">
+ <script>function fileName() { return document.fileName(); }
+function fileUrl() { return document.url(); }
+function encoding() { return document.encoding(); }
+function selection() { return view.selectedText(); }
+function year() { return new Date().getFullYear(); }
+function upper(x) { return x.toUpperCase(); }
+function lower(x) { return x.toLowerCase(); }
+</script>
+ <item>
+  <match>env</match>
+  <fillin>\begin{${name}}${cursor}\end{${name}}</fillin>
+ </item>
+ <item>
+  <match>beamer-frame</match>
+  <fillin>\begin{frame}%[fragile]
+\frametitle{\TODO{title}}
+\framesubtitle{\TODO{subtitle}}
+${cursor}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+</fillin>
+ </item>
+</snippets>

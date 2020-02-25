@@ -39,6 +39,15 @@ clean: clean-bashrc
 
 ###########################################################################
 
+$(HOME)/.local/share/ktexteditor_snippets:
+	ln -s "$(dir $(mkfile_path))/ktexteditor_snippets" $@
+
+install-kate-snippets: $(HOME)/.local/share/ktexteditor_snippets
+.PHONY: install-kate-snippets
+install: install-kate-snippets
+
+###########################################################################
+
 toPrimaryScreen.kwinscript:
 	$(ZIP) -r $@ toPrimaryScreen
 .PHONY: toPrimaryScreen.kwinscript

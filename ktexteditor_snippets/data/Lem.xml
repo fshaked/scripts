@@ -1,0 +1,54 @@
+<snippets authors="Shaked" name="Lem" namespace="lem" filetypes="Lem" license="BSD">
+ <script>function fileName() { return document.fileName(); }
+function fileUrl() { return document.url(); }
+function encoding() { return document.encoding(); }
+function selection() { return view.selectedText(); }
+function year() { return new Date().getFullYear(); }
+function upper(x) { return x.toUpperCase(); }
+function lower(x) { return x.toLowerCase(); }
+</script>
+ <item>
+  <match>update-record</match>
+  <fillin>&lt;|  ${record} with
+    ${field} = ${value};
+|>
+</fillin>
+ </item>
+ <item>
+  <match>set-comprehensions</match>
+  <fillin>{${exp} | forall (${elem} IN ${set}) | ${cond}}</fillin>
+ </item>
+ <item>
+  <match>list-comprehensions</match>
+  <fillin>[${exp} | forall (${elem} MEM ${list}) | ${cond}]</fillin>
+ </item>
+ <item>
+  <match>**...*</match>
+  <fillin>(********************************************************************)</fillin>
+ </item>
+ <item>
+  <match>match</match>
+  <fillin>match ${exp} with
+| ${pat1} -> ${exp1}
+| ${pat2} -> ${exp2}
+end
+</fillin>
+ </item>
+ <item>
+  <match>match-maybe</match>
+  <fillin>match ${exp} with
+| Just ${pat} -> ${exp_just}
+| Nothing -> ${exp_nothing}
+end
+</fillin>
+ </item>
+ <item>
+  <match>update-short-record</match>
+  <fillin>&lt;| ${record} with ${field} = ${value} |>
+</fillin>
+ </item>
+ <item>
+  <match>ensure</match>
+  <fillin>let () = ensure (${cond}) "${fail-message}" in</fillin>
+ </item>
+</snippets>
