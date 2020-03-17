@@ -3,9 +3,6 @@
 # extglob is needed for "@(-o|--opt=)"
 shopt -s extglob
 
-find "${myopt[@]}"
-exit 0
-
 inodeof()
 {
     [ -z "$1" ] || stat -c '%i' "$1"
