@@ -5,7 +5,7 @@
 
 shopt -s extglob
 
-PATH="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd ):$PATH"
+PATH="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd ):$HOME/bin:$PATH"
 
 # ANSI color codes
 RS="\[\033[0m\]"    # reset
@@ -89,7 +89,7 @@ alias rm='rm -i'
 alias vnc='x11vnc -localhost -usepw -forever'
 alias ksvn='kdesvn ./'
 alias beep='paplay ~/beep.wav'
-
+alias emacs='emacs -nw'
 
 export HIGHLIGHT_BEEP='paplay ~/beep.wav'
 export EDITOR='nano'
@@ -111,8 +111,8 @@ findlemdef()
     findin.sh -g --after-context 10 \; -n "*.lem" -- "$LET_PATTERN" "$TYPE_PATTERN"
 }
 
+alias findc='findin.sh -n "*.c" -n "*.cpp" -n "*.h" -n "*.hpp" --'
 alias findh='findin.sh -n "*.h" -n "*.hpp" --'
-alias findc='findin.sh -n "*.c" -n "*.cpp" --'
 alias findlem='findin.sh -n "*.lem" --'
 alias findml='findin.sh -n "*.ml" -n "*.mli" --'
 alias findm='findin.sh -n "*.lem" -n "*.ml" -n "*.mli" --'

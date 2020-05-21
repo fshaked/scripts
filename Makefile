@@ -39,6 +39,28 @@ clean: clean-bashrc
 
 ###########################################################################
 
+MYEMACS := $(realpath $(dir $(mkfile_path))/emacs.el)
+
+install-emacs:
+ifeq ($(shell grep -qF '(load "$(MYEMACS:.el=)")' ~/.emacs 2>/dev/null && echo FOUND), FOUND)
+	@echo ".emacs was already modified"
+else
+	(echo ''\
+	&& echo ';; Added by $(mkfile_path)'\
+	&& echo '(load "$(MYEMACS:.el=)")') >> ~/.emacs
+endif
+.PHONY: install-emacs
+install: install-emacs
+
+clean-emacs :
+	@echo '***'
+	@echo '*** To clean ~/.emacs, look for the comment "Added by $(mkfile_path)"'
+	@echo '***'
+.PHONY: clean-emacs
+clean: clean-emacs
+
+###########################################################################
+
 $(HOME)/.local/share/ktexteditor_snippets:
 	ln -s "$(dir $(mkfile_path))/ktexteditor_snippets" $@
 

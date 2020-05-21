@@ -1,0 +1,11 @@
+<snippets namespace="VeriFast" authors="Shaked Flur" filetypes="C" name="VeriFast" license="BSD">
+ <script></script>
+ <item>
+  <match>predicate</match>
+  <fillin>/*@
+predicate ${name}(${cursor}) =
+	;
+@*/
+</fillin>
+ </item>
+</snippets>
