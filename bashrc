@@ -89,7 +89,7 @@ alias rm='rm -i'
 alias vnc='x11vnc -localhost -usepw -forever'
 alias ksvn='kdesvn ./'
 alias beep='paplay ~/beep.wav'
-alias emacs='emacs -nw'
+alias ppd="date '+%Y-%m-%d'"
 
 export HIGHLIGHT_BEEP='paplay ~/beep.wav'
 export EDITOR='nano'
