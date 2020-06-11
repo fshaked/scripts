@@ -1,0 +1,16 @@
+# -*- mode: snippet -*-
+# contributor: Shaked Flur
+# name: use-package
+# key: use
+# --
+(use-package ${1:package-name}
+:ensure t
+;; :after$0
+;; :commands
+;; :diminish
+;; :hook
+;; :init
+;; :config
+;; :custom
+;; :demand
+)

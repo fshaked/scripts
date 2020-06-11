@@ -40,21 +40,25 @@ clean: clean-bashrc
 ###########################################################################
 
 MYEMACS := $(realpath $(dir $(mkfile_path))/emacs.el)
+EMACSINIT := $(firstword $(wildcard $(HOME)/.emacs $(HOME)/.emacs.el $(HOME)/.emacs.d/init.el) $(HOME)/.emacs)
 
 install-emacs:
-ifeq ($(shell grep -qF '(load "$(MYEMACS:.el=)")' ~/.emacs 2>/dev/null && echo FOUND), FOUND)
-	@echo ".emacs was already modified"
+ifeq ($(shell grep -qF '(load-file "$(MYEMACS)")' $(EMACSINIT) 2>/dev/null && echo FOUND), FOUND)
+	@echo "$(EMACSINIT) was already modified"
 else
-	(echo ''\
-	&& echo ';; Added by $(mkfile_path)'\
-	&& echo '(load "$(MYEMACS:.el=)")') >> ~/.emacs
+	(echo '' \
+	&& echo ';; Added by $(mkfile_path)' \
+	&& echo '(if (file-exists-p "$(MYEMACS)")' \
+	&& echo '    (load-file "$(MYEMACS)")' \
+	&& echo "  (warn \"Can't find '$(MYEMACS)', not loaded!\")" \
+	&& echo '  )') >> $(EMACSINIT)
 endif
 .PHONY: install-emacs
 install: install-emacs
 
 clean-emacs :
 	@echo '***'
-	@echo '*** To clean ~/.emacs, look for the comment "Added by $(mkfile_path)"'
+	@echo '*** To clean $(EMACSINIT), look for the comment "Added by $(mkfile_path)"'
 	@echo '***'
 .PHONY: clean-emacs
 clean: clean-emacs
