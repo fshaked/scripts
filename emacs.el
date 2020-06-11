@@ -123,12 +123,18 @@
 
 (package-initialize)
 
+(defun require-install (FEATURE)
+  "Load FEATURE, if it's not installed, install it first.
+
+Example: (require-install 'use-package)"
+  (when (not (require FEATURE nil 'noerror))
+    (package-install FEATURE)))
 
 (eval-when-compile
   ;; Following line is not needed if use-package.el is in ~/.emacs.d
   ;; (add-to-list 'load-path "<path where use-package is installed>")
-  (require 'use-package))
-(require 'diminish)
+  (require-install 'use-package))
+(require-install 'diminish)
 (require 'bind-key)
 
 ;; ========================== GENERAL KEY BINDINGS =============================
@@ -189,7 +195,8 @@
 
  ("M-<end>" . overwrite-mode)
 
- ("C-x C-k" . kill-this-buffer)
+ ("C-x k" . kill-this-buffer)
+ ("C-x C-k" . kill-buffer)
  )
 
 (defun my-delete-word (ARG)
@@ -527,12 +534,13 @@ A potential prefix ARG is passed on to the executed action, if possible."
 (diminish 'eldoc-mode)
 
 (use-package rustic
+  :ensure t
   :commands rustic-mode
   :mode ("\\.rs\\'" . rustic-mode)
   ;; rust-mode is a system package so cann't be remove.  "If you have rust-mode
   ;; installed, ensure it is required before rustic since it has to be removed
   ;; from auto-mode-alist" :ensure t
-  :init (require 'rust-mode))
+  :init (require 'rust-mode nil 'noerror))
 
 ;; Load the theme last so it will be immediately obvious if something went wrong
 (use-package material-theme
