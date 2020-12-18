@@ -2,7 +2,20 @@
 ;;; Commentary:
 ;;; Code:
 
+(server-start)
+(add-hook 'server-switch-hook (lambda () (select-frame-set-input-focus (selected-frame))))
+
 (setq inhibit-splash-screen t)
+
+;; Taken from https://stackoverflow.com/a/51686698
+(defun set-exec-path-from-shell-PATH ()
+  "Reset PATH to the right PATH.
+Because Emacs might be executed from a non-interactive shell, the PATH might not
+be set correctly.  The following resets PATH."
+  (let ((path-from-shell (shell-command-to-string "$SHELL -ic 'echo $PATH'")))
+    (setenv "PATH" path-from-shell)
+    (setq exec-path (split-string path-from-shell path-separator))))
+(when window-system (set-exec-path-from-shell-PATH))
 
 ;; (setq visible-bell t)
 ;; (setq ring-bell-function 'ignore)
@@ -40,15 +53,40 @@
 (setq mouse-wheel-progressive-speed nil) ;; don't accelerate scrolling
 (setq mouse-wheel-follow-mouse 't) ;; scroll window under mouse
 (setq scroll-step 1) ;; keyboard scroll one line at a time
+(setq scroll-conservatively  10000)
+;; Make it so that PgUp + PgDown comes back to the same position:
 (setq scroll-preserve-screen-position t)
+;; Jump to the start/end of buffer when there are no more lines to scroll:
+(setq scroll-error-top-bottom t)
+(setq scroll-margin 2)
 
 ;; Change yes/no prompt to y/n
 (defalias 'yes-or-no-p 'y-or-n-p)
 
 ;; When 'whitespace-mode' is enabled, show the tail of lines linger than 80.
 (setq-default
- whitespace-line-column 80
- whitespace-style       '(face lines-tail))
+ whitespace-line-column nil  ;; nil means use 'fill-column'
+ whitespace-style       '(face tabs lines-tail))
+
+(setq ediff-split-window-function 'split-window-horizontally)
+
+;; ;; Open all files in read-only-mode, use C-x C-q to toggle read-only-mode.
+;; (defvar my-open-read-only t
+;;   "When 't', files are opened in 'read-only-mode'.")
+;; (defun my-disable-open-read-only ()
+;;   "Disable the opening of all files in 'read-only-mode'."
+;;   (interactive)
+;;   (setq my-open-read-only nil))
+;; (defun my-enable-open-read-only ()
+;;   "Enable the opening of all files in 'read-only-mode'."
+;;   (interactive)
+;;   (setq my-open-read-only 1))
+;; (defun my-find-file-handler ()
+;;   "Called when a file is opened."
+;;   (interactive)
+;;   (if my-open-read-only
+;;     (read-only-mode 1)))
+;; (add-hook 'find-file-hook 'my-find-file-handler)
 
 ;; ============================== HISTORY RING =================================
 
@@ -95,11 +133,6 @@
 ;; where it was when you previously visited the same file.
 (save-place-mode 1)
 
-;; Show line numbers everywhere.
-(global-linum-mode 1)
-(eval-after-load "linum"
-  '(set-face-attribute 'linum nil :height 100))
-
 (delete-selection-mode 1)
 
 ;; Show column number in the mode line.
@@ -113,6 +146,18 @@
 
 (setq-default indent-tabs-mode nil)
 
+;; highlight the current line
+(global-hl-line-mode 1)
+
+(if (version<= "26.0.50" emacs-version )
+    (global-display-line-numbers-mode 1)
+  (global-linum-mode 1))
+
+;; From https://github.com/llvm-mirror/llvm/tree/master/utils/emacs
+(setq load-path
+    (cons (expand-file-name "~/workspace/llvm-emacs") load-path))
+(require 'llvm-mode)
+
 ;; ================================ PACKAGE ====================================
 
 (require 'package)
@@ -123,6 +168,7 @@
 
 (package-initialize)
 
+;; Intended to be used before use-package is loaded.
 (defun require-install (FEATURE)
   "Load FEATURE, if it's not installed, install it first.
 
@@ -139,12 +185,17 @@ Example: (require-install 'use-package)"
 
 ;; ========================== GENERAL KEY BINDINGS =============================
 
+;; Make Esc work as C-g
+(define-key key-translation-map (kbd "ESC") (kbd "C-g"))
+
 (bind-keys
  ("C-h B" . describe-personal-keybindings)
 
- ("C-b" . rectangle-mark-mode)
-
  ("M-b" . my-pos-history-pop)
+
+ ("S-<return>" . electric-newline-and-maybe-indent)
+
+ ("C-x m" . man)
 
  ;; Copy selection
  ("C-w" . kill-ring-save)
@@ -163,13 +214,13 @@ Example: (require-install 'use-package)"
  ;; Join with line below
  ("M-<delete>" . (lambda ()
                    (interactive)
-                   (next-line)
-                   (delete-indentation)))
+                   ;; (next-line)
+                   (delete-indentation t)))
  ;; Delete current line
  ("C-k" . (lambda ()
             (interactive)
-            (progn (kill-whole-line)
-                   (pop kill-ring))))
+            (progn (delete-region (line-beginning-position) (line-end-position))
+                   (delete-blank-lines))))
 
  ;; Comment/uncomment current line(s)
  ("C-d" . comment-line)
@@ -188,30 +239,54 @@ Example: (require-install 'use-package)"
 
  ("C-<tab>" . tab-to-tab-stop)
 
- ("M-<left>"  . windmove-left)
- ("M-<right>" . windmove-right)
- ("M-<up>"    . windmove-up)
- ("M-<down>"  . windmove-down)
+ ("M-<left>"  . (lambda () (interactive "^") (left-char 10)))
+ ("M-<right>" . (lambda () (interactive "^") (right-char 10)))
+ ("M-<up>"    . (lambda () (interactive "^") (previous-line 10)))
+ ("M-<down>"  . (lambda () (interactive "^") (next-line 10)))
 
- ("M-<end>" . overwrite-mode)
+ ("C-M-<left>"  . windmove-left)
+ ("C-M-<right>" . windmove-right)
+ ("C-M-<up>"    . windmove-up)
+ ("C-M-<down>"  . windmove-down)
+
+ ;; The ‘^’ makes Emacs first call the function ‘handle-shift-selection’.
+ ;; This is needed to properly handle S-C-<..>.
+ ("C-<right>" . (lambda () (interactive "^") (forward-same-syntax)))
+ ("C-<left>"  . (lambda () (interactive "^") (forward-same-syntax -1)))
+
+ ;; ("M-<end>" . overwrite-mode)
 
  ("C-x k" . kill-this-buffer)
  ("C-x C-k" . kill-buffer)
  )
 
+(defun my-fill-sentence ()
+  "Apply 'fill-rigion' to the sentence at point."
+  (interactive)
+  ;; (push-mark)
+  (if (use-region-p)
+      (fill-region (region-beginning) (region-end))
+    (let ((bounds (bounds-of-thing-at-point 'sentence)))
+      (fill-region (car bounds) (cdr bounds)))))
+
+(bind-keys
+ ("M-q" . my-fill-sentence)
+ ("M-Q" . fill-paragraph) ;; Originally M-q
+ )
+
 (defun my-delete-word (ARG)
-  "Delete characters until the end of the next sequence of whitespace chars.
-With prefix argument ARG, do it ARG times if positive, or delete backwards ARG
-times if negative."
+  "Delete a block of characters.
+With prefix argument ARG, do it ARG times if positive, or delete
+backwards ARG times if negative."
   (interactive "p")
   (if (use-region-p)
       (delete-region (region-beginning) (region-end))
-    (delete-region (point) (progn (forward-whitespace ARG) (point)))))
+    (delete-region (point) (progn (forward-same-syntax ARG) (point)))))
 
 (defun my-backward-delete-word (ARG)
-  "Delete chars until the end of the previous sequence of whitespace chars.
-With prefix argument ARG, do it ARG times if positive, or delete forwards ARG
-times if negative."
+  "Delete backwards a block of characters.
+With prefix argument ARG, do it ARG times if positive, or delete
+forwards ARG times if negative."
   (interactive "p")
   (my-delete-word (- ARG)))
 
@@ -219,6 +294,14 @@ times if negative."
  ("C-<backspace>" . my-backward-delete-word)
  ("C-<delete>"    . my-delete-word)
  )
+
+
+(defun my-fill-line ()
+  "Fill the line, up to 'fill-column', with the char precedding point."
+  (interactive)
+  (let ((char (char-before)))
+    (if (and (not (bolp)) char)
+       (insert-char char (- fill-column (current-column))))))
 
 ;;; Useful default bindings:
 
@@ -504,6 +587,15 @@ A potential prefix ARG is passed on to the executed action, if possible."
   :ensure t
   :after (ivy yasnippet))
 
+;; Remove trailing white spaces from modified lines.
+(use-package ws-butler
+  :ensure t
+  :diminish
+  :config
+  (setq ws-butler-keep-whitespace-before-point nil)
+  (ws-butler-global-mode)
+  )
+
 ;; =========================== FILE TYPE SPECIFIC ==============================
 
 (use-package proof-general
@@ -542,11 +634,39 @@ A potential prefix ARG is passed on to the executed action, if possible."
   ;; from auto-mode-alist" :ensure t
   :init (require 'rust-mode nil 'noerror))
 
+(defvar my-grip-port 8080
+  "Next port to use by grip.")
+
+(defun my-run-grip ()
+  "Run grip (GitHub format markdown processor) in the background."
+  (interactive)
+  (let ((process (concat "grip-" (number-to-string my-grip-port)))
+        (buffer  (concat "*grip-" (number-to-string my-grip-port) "*"))
+        (url     (concat "127.0.0.1:" (number-to-string my-grip-port))))
+    (progn (start-process process buffer "grip" "-b" (buffer-file-name) url)
+           (setq my-grip-port (+ my-grip-port 1)))))
+
+(use-package markdown-mode
+  :ensure t
+  :mode (("README\\.md\\'" . gfm-mode)
+         ("\\.md\\'" . gfm-mode)
+         ("\\.markdown\\'" . markdown-mode))
+  :init
+  (setq markdown-command "multimarkdown") ; C-c C-c p
+  (setq markdown-open-command 'my-run-grip)) ; C-c C-c o
+
+;; ================================= THEME =====================================
 ;; Load the theme last so it will be immediately obvious if something went wrong
+
 (use-package material-theme
   :ensure t
-  :config (load-theme 'material t))
-
+  :config
+  (load-theme 'material t)
+  ;; Make the line numbers less obtrusive:
+  (set-face-attribute 'line-number nil :background "#222d32")
+  (set-face-attribute 'line-number nil :foreground "#545d62")
+  (set-face-attribute 'line-number-current-line nil :background "#303e45")
+  (set-face-attribute 'line-number-current-line nil :foreground "#8e9498"))
 
 (use-package spaceline
   :ensure t
@@ -559,6 +679,9 @@ A potential prefix ARG is passed on to the executed action, if possible."
   (spaceline-emacs-theme)
   (spaceline-toggle-buffer-size-off)
   (spaceline-toggle-hud-off)
+  ;; spaceline negates the setting of height below, hence we set it here
+  ;; (set-face-attribute 'linum nil :height 110)
+  ;; (set-face-attribute 'linum nil :foreground "#515B60")
   :custom
   (spaceline-minor-modes-separator " ")
   )

@@ -1,17 +1,6 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
-# extglob is needed for "@(-o|--opt=)"
-shopt -s extglob
-
-inodeof()
-{
-    [ -z "$1" ] || stat -c '%i' "$1"
-}
-
-CMDNAME="${0##*/}"
-if [ "$(inodeof "$(which "$CMDNAME")")" != "$(inodeof "$0")" ] ; then
-    CMDNAME="$0"
-fi
+# set -x
 
 usage()
 {
@@ -24,69 +13,56 @@ Descritopn...
 ENDUSAGE
 }
 
-missingarg()
+inodeof()
 {
-    echo "${CMDNAME}: option requires an argument -- '$1'"
-    usage
-    exit 2
-}
-
-parse_options()
-{
-    while [ $# -gt 0 ] ; do
-        case "$1" in
-            -h|--help)
-                shift
-                usage
-                exit 0
-                ;;
-            -o|--opt)
-                if [ $# -gt 1 ] ; then
-                    OPT="$2"
-                    shift 2
-                else
-                    missingarg "$1"
-                    shift
-                fi
-                ;;
-            -o*|--opt=*)
-                # requires 'shopt -s extglob'
-                OPT="${1#@(-o|--opt=)}"
-                shift
-                ;;
-            *)
-                break
-                ;;
-        esac
-    done
-    OPTIONS=("$@")
-}
-
-parse_args()
-{
-    if [ $# -eq 2 ] ; then
-        ARG1="$1"
-        ARG2="$2"
-        shift 2
-    else
-        usage
-        exit 2
-    fi
+    [ -z "$1" ] || stat -c '%i' "$1"
 }
 
 parse_cmd()
 {
-    OPTIONS=()
+    CMDNAME="${0##*/}"
+    if [ "$(inodeof "$(command -v "$CMDNAME")")" != "$(inodeof "$0")" ] ; then
+        CMDNAME="$0"
+    fi
+
+    if ! args=$(getopt -o 'ho:' -l 'help,opt:' --name "${CMDNAME}" -- "$@"); then
+        usage >&2
+        exit 2
+    fi
+    # Note the quotes around "$args": they are essential!
+    eval set -- "$args"
+    unset args
+
     while [ $# -gt 0 ] ; do
-        if [ "$1" == "--" ] ; then
-            shift
-            break
-        fi
-        OPTIONS+=("$1")
-        shift
+        case "$1" in
+            '-h'|'--help')
+                shift
+                usage
+                exit 0
+                ;;
+            '-o'|'--opt')
+                readonly OPT="$2"
+                shift 2
+                ;;
+            '--')
+                shift
+                break
+                ;;
+            *)
+                echo "${CMDNAME}: internal error!" >&2
+                exit 1
+                ;;
+        esac
     done
-    parse_options "${OPTIONS[@]}"
-    parse_args "${OPTIONS[@]}" "$@"
+
+    if [ $# -eq 2 ] ; then
+        readonly ARG1="$1"
+        readonly ARG2="$2"
+        shift 2
+    else
+        usage >&2
+        exit 2
+    fi
 
     # Default values:
     : ${OPT:="???"}

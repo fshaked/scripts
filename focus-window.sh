@@ -1,69 +1,65 @@
-#!/bin/bash
-# extglob is needed for "@(-o|--opt=)"
-shopt -s extglob
+#!/usr/bin/env bash
+
+usage()
+{
+    cat <<ENDUSAGE
+Usage: $CMDNAME CLASS CMD [ARG]...
+Focus or minimize windows of CLASS. If no such window exists, use 'CMD [ARG]...' to create one.
+
+-h, --help                  display this message.
+ENDUSAGE
+}
 
 inodeof()
 {
     [ -z "$1" ] || stat -c '%i' "$1"
 }
 
-CMDNAME="${0##*/}"
-if [ "$(inodeof "$(which "$CMDNAME")")" != "$(inodeof "$0")" ] ; then
-    CMDNAME="$0"
-fi
-
-usage()
+parse_cmd()
 {
-    cat <<ENDUSAGE
-Usage: $CMDNAME CMD CLASS
-Focus or minimize windows of CLASS. If no such window exists, use CMD to create one.
+    CMDNAME="${0##*/}"
+    if [ "$(inodeof "$(command -v "$CMDNAME")")" != "$(inodeof "$0")" ] ; then
+        CMDNAME="$0"
+    fi
 
--h, --help                  display this message.
-ENDUSAGE
-}
+    args=$(getopt -o 'h' -l 'help' --name "${CMDNAME}" -- "$@")
+    if [ $? -ne 0 ]; then
+        usage >&2
+        exit 2
+    fi
+    # Note the quotes around "$args": they are essential!
+    eval set -- "$args"
+    unset args
 
-parse_options()
-{
     while [ $# -gt 0 ] ; do
         case "$1" in
-            -h|--help)
+            '-h'|'--help')
                 shift
                 usage
                 exit 0
                 ;;
-            *)
+            '--')
+                shift
                 break
+                ;;
+            *)
+                echo "${CMDNAME}: internal error!" >&2
+                exit 1
                 ;;
         esac
     done
-    OPTIONS=("$@")
-}
 
-parse_args()
-{
-    if [ $# -eq 2 ] ; then
-        CMD="$1"
-        CLASS="$2"
-        shift 2
+    if [ $# -ge 2 ] ; then
+        readonly CLASS="$1"
+        shift
+        readonly CMD=("$@")
     else
-        usage
+        usage >&2
         exit 2
     fi
-}
 
-parse_cmd()
-{
-    OPTIONS=()
-    while [ $# -gt 0 ] ; do
-        if [ "$1" == "--" ] ; then
-            shift
-            break
-        fi
-        OPTIONS+=("$1")
-        shift
-    done
-    parse_options "${OPTIONS[@]}"
-    parse_args "${OPTIONS[@]}" "$@"
+    # Default values:
+    : ${OPT:="???"}
 }
 
 main()
@@ -71,7 +67,7 @@ main()
     WINDOWS=($(xdotool search --class "$CLASS"))
 
     if [ "${#WINDOWS[@]}" -eq 0 ]; then
-        $CMD
+        "${CMD[@]}"
         exit 0
     fi
 
@@ -88,5 +84,5 @@ main()
     fi
 }
 
-parse_args "$@"
+parse_cmd "$@"
 main

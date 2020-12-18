@@ -1,3 +1,4 @@
+# Emacs, this is -*-shell-script-*-
 # add the following lines to the end of ~/.bashrc
 # if [ -f "$HOME/scripts/bashrc" ]; then
 #     . "$HOME/scripts/bashrc"
@@ -72,8 +73,6 @@ function __prompt_command() {
 bind 'set completion-ignore-case on'
 
 bind    '"\eOM":"\eOHsudo \eOF\C-m"'       # shift-enter
-bind    '"\C-X@s":"\eOHkdesudo \eOF\C-m"'  # win-enter
-bind    '"\C-h":"\eOHman \eOF"'            # ctrl-h
 bind -x '"\el":"l"'                        # alt-l
 
 # Bash only checks the first word for alias expansion. The space at the
@@ -92,7 +91,8 @@ alias beep='paplay ~/beep.wav'
 alias ppd="date '+%Y-%m-%d'"
 
 export HIGHLIGHT_BEEP='paplay ~/beep.wav'
-export EDITOR='nano'
+
+export EDITOR='emacsclient'  # 'nano'
 
 alias xo='xdg-open'
 complete -o filenames -o plusdirs -fd -X '!*.pdf' xo
@@ -102,7 +102,9 @@ export EMAIL='shaked.flur@cl.cam.ac.uk'
 
 function sdu() { du --human-readable --max-depth 1 --all --total "$@" | sort -h; }
 
-ff() { find -L -name "$1"; }
+ff() { find -L . -name "$1"; }
+
+fs() { find -L . -name "*$1"; }
 
 findlemdef()
 {
@@ -111,8 +113,8 @@ findlemdef()
     findin.sh -g --after-context 10 \; -n "*.lem" -- "$LET_PATTERN" "$TYPE_PATTERN"
 }
 
-alias findc='findin.sh -n "*.c" -n "*.cpp" -n "*.h" -n "*.hpp" --'
-alias findh='findin.sh -n "*.h" -n "*.hpp" --'
+alias findc='findin.sh -n "*.c" -n "*.cc" -n "*.cpp" -n "*.h" -n "*.hh" -n "*.hpp" --'
+alias findh='findin.sh -n "*.h" -n "*.hh" -n "*.hpp" --'
 alias findlem='findin.sh -n "*.lem" --'
 alias findml='findin.sh -n "*.ml" -n "*.mli" --'
 alias findm='findin.sh -n "*.lem" -n "*.ml" -n "*.mli" --'
@@ -130,8 +132,7 @@ findhard()
 }
 
 export RMEMDIR="$HOME/rems/rmem/"
-export ISA_DEFS_PATH="$RMEMDIR"
-alias rmem='$RMEMDIR/rmem'
+PATH="$RMEMDIR:$PATH"
 _rmem()
 {
   local cur prev opts
@@ -300,6 +301,8 @@ git-config-sflur()
     git config user.email sflur@google.com
 }
 
+alias ec='emacsclient -n'
+
 myhelp()
 {
     echo "new         - open a new yakuake terminal in the same PWD."
@@ -319,3 +322,15 @@ myhelp()
     echo "sudo nethogs           - top-like network monitor"
 }
 # myhelp
+
+################################################################################
+
+# SeaHorn
+PATH="$HOME/workspace/rust-verification/seahorn-llvm10/build/run/bin:$PATH"
+
+# Crux (Galuas MIR verifier)
+export CRUX_RUST_LIBRARY_PATH="$HOME/workspace/rust-verification/mir-verifier/rlibs"
+
+################################################################################
+
+export PATH
