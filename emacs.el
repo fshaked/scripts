@@ -154,9 +154,10 @@ be set correctly.  The following resets PATH."
   (global-linum-mode 1))
 
 ;; From https://github.com/llvm-mirror/llvm/tree/master/utils/emacs
-(setq load-path
-    (cons (expand-file-name "~/workspace/llvm-emacs") load-path))
-(require 'llvm-mode)
+(if (file-directory-p "~/workspace/llvm-emacs")
+    (progn (setq load-path
+                 (cons (expand-file-name "~/workspace/llvm-emacs") load-path))
+           (require 'llvm-mode)))
 
 ;; ================================ PACKAGE ====================================
 
