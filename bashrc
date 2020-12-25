@@ -92,7 +92,11 @@ alias ppd="date '+%Y-%m-%d'"
 
 export HIGHLIGHT_BEEP='paplay ~/beep.wav'
 
-export EDITOR='emacsclient'  # 'nano'
+if [ -n "$SSH_CONNECTION" ]; then
+  export EDITOR='nano'
+else
+  export EDITOR='emacsclient'
+fi
 
 alias xo='xdg-open'
 complete -o filenames -o plusdirs -fd -X '!*.pdf' xo
@@ -301,7 +305,29 @@ git-config-sflur()
     git config user.email sflur@google.com
 }
 
-alias ec='emacsclient -n'
+
+ssh--()
+{
+    local host="${!#}"
+
+    if command -v gcert >/dev/null && ! gcertstatus -check_ssh=false -quiet=true ; then
+        echo '!!! cert expaired, running gcert'
+        gcert
+    fi
+
+    ssh -t -R 22042:localhost:22 "$@" -- "export MYSSHNAME=$host && bash -l"
+}
+complete -F _ssh ssh--
+
+ec()
+{
+    if [[ -n "$MYSSHNAME" ]]; then
+        ssh -p 22042 localhost -- emacsclient -n /ssh:${MYSSHNAME}:$(pwd)/$1
+    else
+        emacsclient -n "$@"
+    fi
+}
+# alias ec='emacsclient -n'
 
 myhelp()
 {
