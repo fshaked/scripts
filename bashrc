@@ -308,8 +308,10 @@ git-config-sflur()
 
 ssh--()
 {
+    # Assume the last argument is the host name (or user@host).
     local host="${!#}"
 
+    # Run gcert if needed
     if command -v gcert >/dev/null && ! gcertstatus -check_ssh=false -quiet=true ; then
         echo '!!! cert expaired, running gcert'
         gcert
@@ -322,7 +324,8 @@ complete -F _ssh ssh--
 ec()
 {
     if [[ -n "$MYSSHNAME" ]]; then
-        ssh -p 22042 localhost -- emacsclient -n /ssh:${MYSSHNAME}:$(pwd)/$1
+        # Running over ssh, send back a command to open emacsclient using TRAMP
+        ssh -p 22042 localhost -- emacsclient -n /ssh:${MYSSHNAME}:$PWD/$1
     else
         emacsclient -n "$@"
     fi
