@@ -312,7 +312,7 @@ ssh--()
     local host="${!#}"
 
     # Run gcert if needed
-    if command -v gcert >/dev/null && ! gcertstatus -check_ssh=false -quiet=true ; then
+    if command -v gcert >/dev/null && ! gcertstatus -check_ssh=false ; then
         echo '!!! cert expaired, running gcert'
         gcert
     fi
