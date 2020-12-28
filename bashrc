@@ -60,6 +60,7 @@ function __prompt_command() {
   fi
 
   if [ -n "$STY" ]; then
+    # screen session
     line1="${BCYN}${line1}${RS}"
   elif [ -n "$SSH_CONNECTION" ]; then
     line1="${BMAG}${line1}${RS}"
@@ -306,7 +307,7 @@ git-config-sflur()
 }
 
 
-ssh--()
+ssh()
 {
     # Assume the last argument is the host name (or user@host).
     local host="${!#}"
@@ -319,7 +320,6 @@ ssh--()
 
     ssh -t -R 22042:localhost:22 "$@" -- "export MYSSHNAME=$host && bash -l"
 }
-complete -F _ssh ssh--
 
 ec()
 {
@@ -330,7 +330,11 @@ ec()
         emacsclient -n "$@"
     fi
 }
-# alias ec='emacsclient -n'
+
+man()
+{
+    ec -e "(progn (man \"$1\") (select-frame-set-input-focus (selected-frame)))"
+}
 
 myhelp()
 {
