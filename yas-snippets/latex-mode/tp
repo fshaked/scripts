@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: tp
+# key: tp
+# --
+\begin{tikzpicture}[$1]
+    \node[$2] ($3) {$0};
+\end{tikzpicture}
