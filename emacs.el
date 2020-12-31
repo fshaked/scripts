@@ -259,6 +259,7 @@ Example: (require-install 'use-package)"
 
  ("C-x k" . kill-this-buffer)
  ("C-x C-k" . kill-buffer)
+ ("C-x M-0" . kill-buffer-and-window)
  )
 
 (defun my-fill-sentence ()
@@ -303,6 +304,19 @@ forwards ARG times if negative."
   (let ((char (char-before)))
     (if (and (not (bolp)) char)
        (insert-char char (- fill-column (current-column))))))
+
+(defun my-kill-other-buffer-and-window ()
+  "Close the other window and kill the buffer in it."
+  (interactive)
+  (if (one-window-p)
+      (message "There is no other window!")
+    (progn (other-window 1)
+           (kill-this-buffer)
+           ;; Should I check one-window-p again?
+           (delete-window))))
+
+(bind-keys
+ ("C-x M-1" . my-kill-other-buffer-and-window))
 
 ;;; Useful default bindings:
 
