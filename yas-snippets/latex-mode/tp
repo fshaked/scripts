@@ -1,5 +1,5 @@
 # -*- mode: snippet -*-
-# name: tp
+# name: tikzpicture
 # key: tp
 # --
 \begin{tikzpicture}[$1]

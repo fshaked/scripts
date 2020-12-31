@@ -320,7 +320,12 @@ forwards ARG times if negative."
 ;; "M-q"                 runs the command fill-paragraph
 ;; "C-x f"               runs the command set-fill-column
 
-(global-unset-key (kbd "C-x C-z")) ;; Don't runs the command suspend-frame
+;; In ivy counsel:
+;; C-M-j                 runs the command ivy-immediate-done (accept the typed
+;;                       text instead of the match)
+
+
+(global-unset-key (kbd "C-x C-z")) ;; Don't run the command suspend-frame
                                    ;; (minimise under X)
 
 ;; ================================ PACKAGES ===================================
