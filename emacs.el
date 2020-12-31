@@ -63,7 +63,7 @@ be set correctly.  The following resets PATH."
 ;; Change yes/no prompt to y/n
 (defalias 'yes-or-no-p 'y-or-n-p)
 
-;; When 'whitespace-mode' is enabled, show the tail of lines linger than 80.
+;; When 'whitespace-mode' is enabled, show the tail of lines longer than 80.
 (setq-default
  whitespace-line-column nil  ;; nil means use 'fill-column'
  whitespace-style       '(face tabs lines-tail))
