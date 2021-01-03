@@ -318,6 +318,10 @@ forwards ARG times if negative."
 (bind-keys
  ("C-x M-1" . my-kill-other-buffer-and-window))
 
+
+;; the frequency with which the bookmark list is saved
+(setq bookmark-save-flag 1)
+
 ;;; Useful default bindings:
 
 ;; "C-h B"               runs the command describe-personal-keybindings
