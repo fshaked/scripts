@@ -377,7 +377,7 @@ forwards ARG times if negative."
   (ivy-count-format "(%d/%d) ")
   (ivy-on-del-error-function #'ignore "Don't close the minibuffer when pressing backspace.")
   :demand
-  :bind (("<f6>" . ivy-resume)
+  :bind (("<f3>" . ivy-resume)
          ("C-s" . swiper)
          ("C-S-s" . swiper-thing-at-point)
          ("M-x" . counsel-M-x)
@@ -385,8 +385,7 @@ forwards ARG times if negative."
          ("M-y" . counsel-yank-pop)
          ("C-x b" . ivy-switch-buffer)
          ("C-c v" . ivy-push-view)
-         ("C-c V" . ivy-pop-view)
-         ("C-S-v" . counsel-yank-pop)))
+         ("C-c V" . ivy-pop-view)))
 
 
 
