@@ -307,7 +307,7 @@ git-config-sflur()
 }
 
 
-ssh()
+ssh--()
 {
     # Assume the last argument is the host name (or user@host).
     local host="${!#}"

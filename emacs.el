@@ -414,7 +414,8 @@ forwards ARG times if negative."
   :commands (flyspell-mode)
   :diminish "FS"
   :bind (("C-M-o" . my-flyspell-toggle)
-         ("C-o" . flyspell-mode)))
+         ("C-o" . flyspell-mode)
+         ("C-;" . flyspell-correct-at-point)))
 
 (use-package flyspell-correct
   :ensure t
