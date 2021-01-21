@@ -657,7 +657,10 @@ A potential prefix ARG is passed on to the executed action, if possible."
   ;; rust-mode is a system package so cann't be remove.  "If you have rust-mode
   ;; installed, ensure it is required before rustic since it has to be removed
   ;; from auto-mode-alist" :ensure t
-  :init (require 'rust-mode nil 'noerror))
+  :init
+  ;; Always use the stable rust tools
+  (setenv "RUSTUP_TOOLCHAIN" "stable")
+  (require 'rust-mode nil 'noerror))
 
 (defvar my-grip-port 8080
   "Next port to use by grip.")
