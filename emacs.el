@@ -403,7 +403,7 @@ forwards ARG times if negative."
   :demand
   :bind (("<f3>" . ivy-resume)
          ("C-S-s" . swiper)
-         ("C-s" . swiper-thing-at-point)
+         ("C-s" . my-swiper-thing-at-point)
          ("M-x" . counsel-M-x)
          ("C-x C-f" . counsel-find-file)
          ("M-y" . counsel-yank-pop)
@@ -411,7 +411,13 @@ forwards ARG times if negative."
          ("C-c v" . ivy-push-view)
          ("C-c V" . ivy-pop-view)))
 
-
+(defun my-swiper-thing-at-point ()
+  "Run swiper-thing-at-point and mark the input."
+  (interactive)
+  (progn
+    (push 'S-end unread-command-events)
+    (push 'home unread-command-events)
+    (swiper-thing-at-point)))
 
 (use-package mode-line-bell
   :ensure t
