@@ -359,6 +359,9 @@ myhelp()
 
 ################################################################################
 
+# llvm tools from rust build
+PATH="$HOME/workspace/rust-verification/rust/build/x86_64-unknown-linux-gnu/llvm/bin:$PATH"
+
 # SeaHorn
 PATH="$HOME/workspace/rust-verification/seahorn-llvm10/build/run/bin:$PATH"
 

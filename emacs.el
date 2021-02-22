@@ -159,6 +159,16 @@ be set correctly.  The following resets PATH."
                  (cons (expand-file-name "~/workspace/llvm-emacs") load-path))
            (require 'llvm-mode)))
 
+;; Start typing in rectangle-mark-mode without `C-t`
+(defun string-rectangle-with-initial (char)
+  (interactive (list last-input-event))
+  (push char unread-command-events)
+  (call-interactively 'string-rectangle))
+
+(eval-after-load 'rect
+  '(define-key rectangle-mark-mode-map
+     [remap self-insert-command] 'string-rectangle-with-initial))
+
 ;; ================================ PACKAGE ====================================
 
 (require 'package)
@@ -224,9 +234,9 @@ Example: (require-install 'use-package)"
                    (delete-blank-lines))))
 
  ;; Comment/uncomment current line(s)
- ("C-d" . comment-line)
+ ;; ("C-d" . comment-line)
  ;; Comment/uncomment selection
- ("C-S-d" . comment-or-uncomment-region)
+ ;; ("C-S-d" . comment-or-uncomment-region)
 
  ("C-<up>" . scroll-down-line)
  ("C-<down>" . scroll-up-line)
@@ -272,8 +282,8 @@ Example: (require-install 'use-package)"
       (fill-region (car bounds) (cdr bounds)))))
 
 (bind-keys
- ("M-q" . my-fill-sentence)
- ("M-Q" . fill-paragraph) ;; Originally M-q
+ ("M-Q" . my-fill-sentence)
+ ;; ("M-q" . fill-paragraph) ;; Originally M-q
  )
 
 (defun my-delete-word (ARG)
@@ -348,23 +358,37 @@ forwards ARG times if negative."
 
 ;; ================================ PACKAGES ===================================
 
-(use-package auto-complete
+;; (use-package auto-complete
+;;   :ensure t
+;;   :hook (coq-mode . (lambda () (auto-complete-mode -1)))
+;;   :config
+;;   (ac-config-default)
+;;   ;; (ac-set-trigger-key "TAB")
+;;   (add-to-list 'ac-user-dictionary "fshaked@gmail.com")
+;;   (add-to-list 'ac-user-dictionary "sflur@google.com")
+;;   (setq ac-auto-show-menu 0.8)
+;;   :custom
+;;   (ac-use-menu-map t)
+;;   ;; Popup after <n> chars
+;;   (ac-auto-start 4)
+;;   ;; :demand
+;;   :bind (("C-<SPC>" . auto-complete)
+;;          :map ac-completing-map
+;;          ("<backtab>" . ac-previous)))
+
+(use-package company
   :ensure t
-  :hook (coq-mode . (lambda () (auto-complete-mode -1)))
-  :config
-  (ac-config-default)
-  ;; (ac-set-trigger-key "TAB")
-  (add-to-list 'ac-user-dictionary "fshaked@gmail.com")
-  (add-to-list 'ac-user-dictionary "sflur@google.com")
-  (setq ac-auto-show-menu 0.8)
+  ;; :after
+  ;; :commands
+  :diminish
+  :hook (after-init . global-company-mode)
+  ;; :init
+  ;; :config
   :custom
-  (ac-use-menu-map t)
-  ;; Popup after <n> chars
-  (ac-auto-start 4)
+  (company-idle-delay 0.8)
+  (company-minimum-prefix-length 4)
   ;; :demand
-  :bind (("C-<SPC>" . auto-complete)
-         :map ac-completing-map
-         ("<backtab>" . ac-previous)))
+  :bind (("C-<SPC>" . company-complete)))
 
 ;; Enable the ivy completion interface
 (use-package counsel :ensure t)
@@ -378,8 +402,8 @@ forwards ARG times if negative."
   (ivy-on-del-error-function #'ignore "Don't close the minibuffer when pressing backspace.")
   :demand
   :bind (("<f3>" . ivy-resume)
-         ("C-s" . swiper)
-         ("C-S-s" . swiper-thing-at-point)
+         ("C-S-s" . swiper)
+         ("C-s" . swiper-thing-at-point)
          ("M-x" . counsel-M-x)
          ("C-x C-f" . counsel-find-file)
          ("M-y" . counsel-yank-pop)
@@ -462,110 +486,6 @@ forwards ARG times if negative."
   :commands (define-word define-word-at-point)
   :bind ("C-c d" . define-word-at-point))
 
-(use-package treemacs
-  :ensure t
-  :defer t
-  :init
-  (with-eval-after-load 'winum
-    (define-key winum-keymap (kbd "M-0") #'treemacs-select-window))
-  :config
-  (progn
-    (setq treemacs-collapse-dirs                 (if treemacs-python-executable 3 0)
-          treemacs-deferred-git-apply-delay      0.5
-          treemacs-directory-name-transformer    #'identity
-          treemacs-display-in-side-window        t
-          treemacs-eldoc-display                 t
-          treemacs-file-event-delay              5000
-          treemacs-file-extension-regex          treemacs-last-period-regex-value
-          treemacs-file-follow-delay             0.2
-          treemacs-file-name-transformer         #'identity
-          treemacs-follow-after-init             t
-          treemacs-git-command-pipe              ""
-          treemacs-goto-tag-strategy             'refetch-index
-          treemacs-indentation                   2
-          treemacs-indentation-string            " "
-          treemacs-is-never-other-window         nil
-          treemacs-max-git-entries               5000
-          treemacs-missing-project-action        'ask
-          treemacs-move-forward-on-expand        nil
-          treemacs-no-png-images                 t
-          treemacs-no-delete-other-windows       t
-          treemacs-project-follow-cleanup        nil
-          treemacs-persist-file                  (expand-file-name ".cache/treemacs-persist" user-emacs-directory)
-          treemacs-position                      'left
-          treemacs-recenter-distance             0.1
-          treemacs-recenter-after-file-follow    nil
-          treemacs-recenter-after-tag-follow     nil
-          treemacs-recenter-after-project-jump   'always
-          treemacs-recenter-after-project-expand 'on-distance
-          treemacs-show-cursor                   nil
-          treemacs-show-hidden-files             t
-          treemacs-silent-filewatch              nil
-          treemacs-silent-refresh                nil
-          treemacs-sorting                       'alphabetic-asc
-          treemacs-space-between-root-nodes      t
-          treemacs-tag-follow-cleanup            t
-          treemacs-tag-follow-delay              1.5
-          treemacs-user-mode-line-format         nil
-          treemacs-user-header-line-format       nil
-          treemacs-width                         35)
-
-    ;; The default width and height of the icons is 22 pixels. If you are
-    ;; using a Hi-DPI display, uncomment this to double the icon size.
-    ;;(treemacs-resize-icons 44)
-
-    (treemacs-follow-mode t)
-    (treemacs-filewatch-mode t)
-    (treemacs-fringe-indicator-mode t)
-    (pcase (cons (not (null (executable-find "git")))
-                 (not (null treemacs-python-executable)))
-      (`(t . t)
-       (treemacs-git-mode 'deferred))
-      (`(t . _)
-       (treemacs-git-mode 'simple)))
-    ;; Close the treemacs window when visiting a file:
-    (treemacs-define-RET-action 'file-node-open #'my-treemacs-visit-and-close)
-    (treemacs-define-RET-action 'file-node-closed #'my-treemacs-visit-and-close)
-    (treemacs-define-RET-action 'tag-node #'my-treemacs-visit-and-close)
-    (treemacs-define-TAB-action 'tag-node #'my-treemacs-visit-and-close)
-    )
-  :bind
-  (:map global-map
-        ("C-x C-x"      . my-treemacs-toggle)
-        ("C-x 1"        . treemacs-delete-other-windows)
-        ;; ("M-0"       . treemacs-select-window)
-        ;; ("C-x t t"   . treemacs)
-        ;; ("C-x t B"   . treemacs-bookmark)
-        ;; ("C-x t C-t" . treemacs-find-file)
-        ;; ("C-x t M-t" . treemacs-find-tag)
-        )
-  (:map treemacs-mode-map
-        ("f"       . treemacs-find-file)
-        ("<next>"  . scroll-up-command)
-        ("<prior>" . scroll-down-command)
-        )
-  )
-
-(defun my-treemacs-toggle ()
-  "Toggle visibility of the treemacs window."
-  (interactive)
-  (if (fboundp 'treemacs-with-toggle)
-      (treemacs-with-toggle (treemacs))
-    (treemacs)
-    )
-  )
-
-(defun my-treemacs-visit-and-close (&optional ARG)
-  "Run ‘treemacs-default-visit-action’ for the current button and hide treemacs.
-A potential prefix ARG is passed on to the executed action, if possible."
-  (interactive "P")
-  (treemacs-visit-node-default ARG)
-  (treemacs))
-
-(use-package treemacs-magit
-  :ensure t
-  :after treemacs magit)
-
 (defconst my-snippets-dir
   (expand-file-name
    "yas-snippets"
@@ -621,6 +541,28 @@ A potential prefix ARG is passed on to the executed action, if possible."
   (ws-butler-global-mode)
   )
 
+(use-package lsp-mode
+  :init
+  ;; set prefix for lsp-command-keymap (few alternatives - "C-l", "C-c l")
+  (setq lsp-keymap-prefix "C-c l"
+        lsp-prefer-flymake nil) ; Use lsp-ui and flycheck
+  :hook (;; replace XXX-mode with concrete major-mode(e. g. python-mode)
+         ;; (XXX-mode . #'lsp-deferred)
+         ;; if you want which-key integration
+         (lsp-mode . lsp-enable-which-key-integration))
+  :commands lsp
+  :diminish (lsp-mode . "LSP")
+  :bind (:map lsp-mode-map
+    ("C-c C-d" . lsp-describe-thing-at-point)))
+
+(use-package lsp-ui
+  :commands lsp-ui-mode
+  :custom
+  (lsp-ui-doc-enable nil)
+  (lsp-ui-sideline-show-hover t))
+
+(use-package lsp-ivy :commands lsp-ivy-workspace-symbol)
+
 ;; =========================== FILE TYPE SPECIFIC ==============================
 
 (use-package proof-general
@@ -656,11 +598,21 @@ A potential prefix ARG is passed on to the executed action, if possible."
   :mode ("\\.rs\\'" . rustic-mode)
   ;; rust-mode is a system package so cann't be remove.  "If you have rust-mode
   ;; installed, ensure it is required before rustic since it has to be removed
-  ;; from auto-mode-alist" :ensure t
+  ;; from auto-mode-alist"
   :init
-  ;; Always use the stable rust tools
-  (setenv "RUSTUP_TOOLCHAIN" "stable")
-  (require 'rust-mode nil 'noerror))
+  ;; Always use the stable/nightly rust tools
+  (setenv "RUSTUP_TOOLCHAIN" "nightly")
+  (push 'rustic-clippy flycheck-checkers)
+  (require 'rust-mode nil 'noerror)
+  :config
+  (diminish 'company-mode)
+  ;; :custom-face
+  ;; (lsp-face-highlight-read ((t (:inherit highlight :background "yellow3" :foreground "black"))))
+  ;; :custom
+  ;; (lsp-enable-symbol-highlighting nil)
+  :bind (:map rustic-mode-map
+              ("C-c l d" . lsp-ui-doc-show)))
+
 
 (defvar my-grip-port 8080
   "Next port to use by grip.")
@@ -694,7 +646,9 @@ A potential prefix ARG is passed on to the executed action, if possible."
   (set-face-attribute 'line-number nil :background "#222d32")
   (set-face-attribute 'line-number nil :foreground "#545d62")
   (set-face-attribute 'line-number-current-line nil :background "#303e45")
-  (set-face-attribute 'line-number-current-line nil :foreground "#8e9498"))
+  (set-face-attribute 'line-number-current-line nil :foreground "#8e9498")
+  :custom-face
+  (highlight ((t (:inverse-video nil :background "DarkGoldenrod4")))))
 
 (use-package spaceline
   :ensure t
