@@ -6,7 +6,7 @@
 
 shopt -s extglob
 
-PATH="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd ):$HOME/bin:$PATH"
+PATH="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd ):$HOME/.local/bin:$HOME/bin:$PATH"
 
 # ANSI color codes
 RS="\[\033[0m\]"    # reset
