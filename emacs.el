@@ -29,6 +29,10 @@ be set correctly.  The following resets PATH."
 
 (setq-default x-stretch-cursor t)
 
+;; sentences end with single space
+;; (M-e - forward-sentence)
+(setq sentence-end-double-space nil)
+
 (setq backup-directory-alist `(("." . "~/.emacs-backup")))
 (setq make-backup-files t               ; backup of a file the first time it is
                                         ; saved.
@@ -272,6 +276,26 @@ Example: (require-install 'use-package)"
  ("C-x M-0" . kill-buffer-and-window)
  )
 
+(defun my-end ()
+  "Move to the end of the line, if already there, move to the end of the sentence."
+  (interactive "^") ;; The `^` makes shift selection work.
+  (let ((e (line-end-position)) (p (point)))
+    (if (= e p)
+        (forward-sentence)
+      (move-end-of-line nil))))
+
+(defun my-home ()
+  "Move to the beginning of the line, if already there, move to the beginning of the sentence."
+  (interactive "^") ;; The `^` makes shift selection work.
+  (let ((b (line-beginning-position)) (p (point)))
+    (if (= b p)
+        (backward-sentence)
+      (move-beginning-of-line nil))))
+
+(bind-keys
+ ("<end>" . my-end)
+ ("<home>" . my-home))
+
 (defun my-fill-sentence ()
   "Apply 'fill-rigion' to the sentence at point."
   (interactive)
@@ -401,9 +425,8 @@ forwards ARG times if negative."
   (ivy-count-format "(%d/%d) ")
   (ivy-on-del-error-function #'ignore "Don't close the minibuffer when pressing backspace.")
   :demand
-  :bind (("<f3>" . ivy-resume)
-         ("C-S-s" . swiper)
-         ("C-s" . my-swiper-thing-at-point)
+  :bind (("C-s" . my-swiper-thing-at-point)
+         ("<f3>" . my-swiper-again)
          ("M-x" . counsel-M-x)
          ("C-x C-f" . counsel-find-file)
          ("M-y" . counsel-yank-pop)
@@ -412,12 +435,25 @@ forwards ARG times if negative."
          ("C-c V" . ivy-pop-view)))
 
 (defun my-swiper-thing-at-point ()
-  "Run swiper-thing-at-point and mark the input."
+  "Run swiper-thing-at-point and mark swiper's input."
   (interactive)
   (progn
-    (push 'S-end unread-command-events)
-    (push 'home unread-command-events)
+    (run-with-idle-timer
+     0 nil (lambda ()
+             (push 'S-end unread-command-events)
+             (push 'home unread-command-events)))
     (swiper-thing-at-point)))
+
+(defun my-swiper-again ()
+  "Run swiper with the previous history element."
+  (interactive)
+  (progn
+    (run-with-idle-timer
+     0 nil (lambda ()
+             (setq unread-command-events
+                   (nconc (listify-key-sequence (kbd "M-p")) unread-command-events))
+             ))
+    (swiper)))
 
 (use-package mode-line-bell
   :ensure t
@@ -428,7 +464,7 @@ forwards ARG times if negative."
   :ensure t
   :commands (which-key-mode)
   :diminish
-  :init (setq which-key-idle-delay 3)
+  :init (setq which-key-idle-delay 2)
   :hook (after-init . which-key-mode))
 
 (defun my-flyspell-toggle ()
@@ -567,7 +603,8 @@ forwards ARG times if negative."
   (lsp-ui-doc-enable nil)
   (lsp-ui-sideline-show-hover t))
 
-(use-package lsp-ivy :commands lsp-ivy-workspace-symbol)
+(use-package lsp-ivy
+  :commands lsp-ivy-workspace-symbol)
 
 ;; =========================== FILE TYPE SPECIFIC ==============================
 
@@ -618,7 +655,6 @@ forwards ARG times if negative."
   ;; (lsp-enable-symbol-highlighting nil)
   :bind (:map rustic-mode-map
               ("C-c l d" . lsp-ui-doc-show)))
-
 
 (defvar my-grip-port 8080
   "Next port to use by grip.")
