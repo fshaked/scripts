@@ -201,7 +201,8 @@ Example: (require-install 'use-package)"
 ;; ========================== GENERAL KEY BINDINGS =============================
 
 ;; Make Esc work as C-g
-(define-key key-translation-map (kbd "ESC") (kbd "C-g"))
+(if (display-graphic-p)
+    (define-key key-translation-map (kbd "ESC") (kbd "C-g")))
 
 (bind-keys
  ("C-h B" . describe-personal-keybindings)
