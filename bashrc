@@ -332,6 +332,8 @@ ec()
     fi
 }
 
+alias enw='emacs -nw'
+
 man()
 {
     ec -e "(progn (man \"$1\") (select-frame-set-input-focus (selected-frame)))"
