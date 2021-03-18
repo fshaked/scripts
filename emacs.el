@@ -120,6 +120,16 @@ Return an event vector."
 
 (setq ediff-split-window-function 'split-window-horizontally)
 
+(defadvice term-handle-exit
+    (after term-kill-buffer-on-exit activate)
+  "Kill term buffer after the process terminates."
+  (kill-buffer))
+
+(add-hook 'term-mode-hook
+          (lambda ()
+            (display-line-numbers-mode 0)
+            (setq-local global-hl-line-mode nil)))
+
 ;; ;; Open all files in read-only-mode, use C-x C-q to toggle read-only-mode.
 ;; (defvar my-open-read-only t
 ;;   "When 't', files are opened in 'read-only-mode'.")
@@ -449,16 +459,11 @@ forwards ARG times if negative."
 
 (use-package company
   :ensure t
-  ;; :after
-  ;; :commands
   :diminish
   :hook (after-init . global-company-mode)
-  ;; :init
-  ;; :config
   :custom
   (company-idle-delay 0.8)
   (company-minimum-prefix-length 4)
-  ;; :demand
   :bind (("C-<SPC>" . company-complete)))
 
 ;; Enable the ivy completion interface
@@ -466,12 +471,11 @@ forwards ARG times if negative."
 (use-package ivy
   :ensure t
   :diminish
-  :config (ivy-mode 1)
+  :hook (after-init . ivy-mode)
   :custom
   (ivy-use-virtual-buffers t)
   (ivy-count-format "(%d/%d) ")
   (ivy-on-del-error-function #'ignore "Don't close the minibuffer when pressing backspace.")
-  :demand
   :bind (("C-s" . my-swiper-thing-at-point)
          ("<f3>" . my-swiper-again)
          ("M-x" . counsel-M-x)
@@ -479,7 +483,9 @@ forwards ARG times if negative."
          ("M-y" . counsel-yank-pop)
          ("C-x b" . ivy-switch-buffer)
          ("C-c v" . ivy-push-view)
-         ("C-c V" . ivy-pop-view)))
+         ("C-c V" . ivy-pop-view)
+         ("<f12>" . my-counsel-switch-to-term-buffer)
+         ("S-<f12>" . tramp-term)))
 
 (defun my-swiper-thing-at-point ()
   "Run swiper-thing-at-point and mark swiper's input."
@@ -502,16 +508,35 @@ forwards ARG times if negative."
              ))
     (swiper)))
 
+;; Adapted from counsel-switch-to-shell-buffer
+(defun my-counsel-switch-to-term-buffer ()
+  "Switch to a term buffer, or create one (ansi-term bash)."
+  (interactive)
+  (ivy-read "Term buffer: " (counsel--buffers-with-mode #'term-mode)
+            :action #'my-counsel--switch-to-term
+            :caller 'my-counsel-switch-to-term-buffer))
+
+(defun my-counsel--switch-to-term (name)
+  "Display term buffer with NAME and select its window.
+Reuse any existing window already displaying the named buffer.
+If there is no such buffer, start a new `ansi-term bash' with NAME."
+  (if (get-buffer name)
+      (pop-to-buffer name '((display-buffer-reuse-window
+                             display-buffer-same-window)
+                            (inhibit-same-window . nil)
+                            (reusable-frames . visible)))
+    (ansi-term "bash" name)))
+
+;; Flash the Emacs mode line instead of ringing the bell
 (use-package mode-line-bell
   :ensure t
-  :config (mode-line-bell-mode))
+  :hook (after-init . mode-line-bell-mode))
 
 ;; Show bindings after pressing prefix
 (use-package which-key
   :ensure t
-  :commands (which-key-mode)
   :diminish
-  :init (setq which-key-idle-delay 2)
+  :config (setq which-key-idle-delay 2)
   :hook (after-init . which-key-mode))
 
 (defun my-flyspell-toggle ()
@@ -532,7 +557,7 @@ forwards ARG times if negative."
 
 (use-package flyspell-correct
   :ensure t
-  :commands (flyspell-correct-wrapper)
+  :commands (flyspell-mode flyspell-correct-wrapper)
   :after flyspell
   :bind (:map flyspell-mode-map ("C-;" . flyspell-correct-wrapper)))
 
@@ -543,15 +568,12 @@ forwards ARG times if negative."
 ;; On the fly syntax checking
 (use-package flycheck
   :ensure t
-  :commands (flycheck-mode global-flycheck-mode)
   :diminish "FC"
   :hook (after-init . global-flycheck-mode)
-  :bind ("C-c ! q" . flycheck-mode)
-  )
+  :bind ("C-c ! q" . flycheck-mode))
 
 (use-package move-text
   :ensure t
-  :commands (move-text-down move-text-up)
   :bind (("C-S-<down>" . move-text-down)
          ("C-S-<up>" . move-text-up)))
 
@@ -559,9 +581,8 @@ forwards ARG times if negative."
   :ensure t
   :diminish
   :config
-  (global-undo-tree-mode 1)
   (defalias 'redo 'undo-tree-redo)
-  :demand
+  :hook (after-init . global-undo-tree-mode)
   :bind (("C-z" . undo)
          ("C-S-z" . redo)))
 
@@ -569,6 +590,13 @@ forwards ARG times if negative."
   :ensure t
   :commands (magit magit-status)
   :bind ("C-x g" . magit-status))
+
+;; Highlight uncommitted changes on the side of the window
+(use-package diff-hl
+  :ensure t
+  :hook ((after-init . global-diff-hl-mode)))
+         ;; (magit-pre-refresh diff-hl-magit-pre-refresh)
+         ;; (magit-post-refresh diff-hl-magit-post-refresh)))
 
 (use-package define-word
   :ensure t
@@ -625,12 +653,13 @@ forwards ARG times if negative."
 (use-package ws-butler
   :ensure t
   :diminish
+  :hook (after-init . ws-butler-global-mode)
   :config
-  (setq ws-butler-keep-whitespace-before-point nil)
-  (ws-butler-global-mode)
-  )
+  (setq ws-butler-keep-whitespace-before-point nil))
 
 (use-package lsp-mode
+  :ensure t
+  :diminish (lsp-mode . "LSP")
   :init
   ;; set prefix for lsp-command-keymap (few alternatives - "C-l", "C-c l")
   (setq lsp-keymap-prefix "C-c l"
@@ -640,18 +669,24 @@ forwards ARG times if negative."
          ;; if you want which-key integration
          (lsp-mode . lsp-enable-which-key-integration))
   :commands lsp
-  :diminish (lsp-mode . "LSP")
   :bind (:map lsp-mode-map
     ("C-c C-d" . lsp-describe-thing-at-point)))
 
 (use-package lsp-ui
+  :ensure t
+  :after (lsp-mode)
   :commands lsp-ui-mode
   :custom
   (lsp-ui-doc-enable nil)
   (lsp-ui-sideline-show-hover t))
 
 (use-package lsp-ivy
+  :ensure t
   :commands lsp-ivy-workspace-symbol)
+
+(use-package tramp-term
+  :ensure t
+  :commands (tramp-term))
 
 ;; =========================== FILE TYPE SPECIFIC ==============================
 
@@ -667,6 +702,7 @@ forwards ARG times if negative."
   :custom (company-coq-features/prettify-symbols-in-terminals t "Enable prettify-symbols-mode by default"))
 
 ;; OCaml mode
+;; (might need to uncomment OPAM line at the bottom of ~/.emacs, it makes emacs start very slow)
 (use-package tuareg
   :ensure t
   :commands (tuareg-mode)
@@ -737,7 +773,8 @@ forwards ARG times if negative."
   (set-face-attribute 'line-number-current-line nil :background "#303e45")
   (set-face-attribute 'line-number-current-line nil :foreground "#8e9498")
   :custom-face
-  (highlight ((t (:inverse-video nil :background "DarkGoldenrod4")))))
+  (highlight ((t (:inverse-video nil :background "DarkGoldenrod4"))))
+  (term-color-blue ((t (:foreground "#5454ff" :background "#1818b2")))))
 
 (use-package spaceline
   :ensure t
