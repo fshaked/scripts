@@ -339,6 +339,9 @@ man()
     ec -e "(progn (man \"$1\") (select-frame-set-input-focus (selected-frame)))"
 }
 
+# apt get install speedtest-cli
+alias st='speedtest --no-upload'
+
 myhelp()
 {
     echo "new         - open a new yakuake terminal in the same PWD."
