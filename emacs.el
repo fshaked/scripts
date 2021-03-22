@@ -130,6 +130,17 @@ Return an event vector."
             (display-line-numbers-mode 0)
             (setq-local global-hl-line-mode nil)))
 
+;; Adapted from https://emacs.stackexchange.com/a/7120
+(defun my-pop-up-frame ()
+  "Pop-up the current window in a new frame.
+
+Use \\[delete-frame] to `delete-frame'."
+  (interactive)
+  (let ((buffer (current-buffer)))
+    (unless (one-window-p)
+      (delete-window))
+    (display-buffer buffer '(display-buffer-pop-up-frame . nil))))
+
 ;; ;; Open all files in read-only-mode, use C-x C-q to toggle read-only-mode.
 ;; (defvar my-open-read-only t
 ;;   "When 't', files are opened in 'read-only-mode'.")
