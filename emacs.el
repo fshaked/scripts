@@ -337,12 +337,9 @@ Example: (require-install 'use-package)"
  ("C-<right>" . (lambda () (interactive "^") (forward-same-syntax)))
  ("C-<left>"  . (lambda () (interactive "^") (forward-same-syntax -1)))
 
- ;; ("M-<end>" . overwrite-mode)
-
  ("C-x k" . kill-this-buffer)
  ("C-x C-k" . kill-buffer)
- ("C-x M-0" . kill-buffer-and-window)
- )
+ ("C-x M-0" . kill-buffer-and-window))
 
 (defun my-end ()
   "Move to the end of the line, if already there, move to the end of the sentence."
