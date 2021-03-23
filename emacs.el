@@ -496,7 +496,16 @@ forwards ARG times if negative."
          ("C-c v" . ivy-push-view)
          ("C-c V" . ivy-pop-view)
          ("<f12>" . my-counsel-switch-to-term-buffer)
-         ("S-<f12>" . tramp-term)))
+         ("S-<f12>" . tramp-term)
+         :map bookmark-bmenu-mode-map
+         ("C-f" . (lambda ()
+                    "In bookmark-bmenu-mode C-f open counsel-find-file in the directory pointed by the selected bookmark."
+                    (interactive)
+                    (let* ((bookmark (bookmark-bmenu-bookmark))
+                           (file (bookmark-get-filename bookmark))
+                           (name nil) ;; (file-name-nondirectory file))
+                           (dir (file-name-directory file)))
+                      (counsel-find-file name dir))))))
 
 (defun my-swiper-thing-at-point ()
   "Run swiper-thing-at-point and mark swiper's input."
