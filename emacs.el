@@ -322,8 +322,8 @@ Example: (require-install 'use-package)"
 
  ("C-<tab>" . tab-to-tab-stop)
 
- ("M-<left>"  . (lambda () (interactive "^") (left-char 10)))
- ("M-<right>" . (lambda () (interactive "^") (right-char 10)))
+ ("M-<left>"  . (lambda () (interactive "^") (forward-whitespace -1))) ;;(lambda () (interactive "^") (left-char 10)))
+ ("M-<right>" . forward-whitespace) ;;(lambda () (interactive "^") (right-char 10)))
  ("M-<up>"    . (lambda () (interactive "^") (previous-line 10)))
  ("M-<down>"  . (lambda () (interactive "^") (next-line 10)))
 
@@ -481,6 +481,7 @@ forwards ARG times if negative."
   :diminish
   :hook (after-init . ivy-mode)
   :custom
+  (counsel-bookmark-avoid-dired t)
   (ivy-use-virtual-buffers t)
   (ivy-count-format "(%d/%d) ")
   (ivy-on-del-error-function #'ignore "Don't close the minibuffer when pressing backspace.")
@@ -494,15 +495,34 @@ forwards ARG times if negative."
          ("C-c V" . ivy-pop-view)
          ("<f12>" . my-counsel-switch-to-term-buffer)
          ("S-<f12>" . tramp-term)
-         :map bookmark-bmenu-mode-map
-         ("C-f" . (lambda ()
-                    "In bookmark-bmenu-mode C-f open counsel-find-file in the directory pointed by the selected bookmark."
-                    (interactive)
-                    (let* ((bookmark (bookmark-bmenu-bookmark))
-                           (file (bookmark-get-filename bookmark))
-                           (name nil) ;; (file-name-nondirectory file))
-                           (dir (file-name-directory file)))
-                      (counsel-find-file name dir))))))
+         ;; C-x r b is originally bound to bookmark-jump
+         ("C-x r b" . counsel-bookmark)
+         ("C-x d" . counsel-dired)
+         ("C-h o" . counsel-describe-symbol)
+         ;; rgrep
+         ("M-s g" . counsel-rg)))
+
+(use-package ivy-rich
+  :ensure t
+  :after ivy
+  :hook (after-init . ivy-rich-mode)
+  :config
+  (setcdr (assq t ivy-format-functions-alist) #'ivy-format-function-line)
+  (ivy-rich-project-root-cache-mode 1)
+  (ivy-rich-modify-column 'ivy-switch-buffer
+                          'ivy-switch-buffer-transformer
+                          '(:width 30)))
+
+;; To get the icons run all-the-icons-install-fonts once
+(use-package all-the-icons-ivy-rich
+  :ensure t
+  :hook (after-init . all-the-icons-ivy-rich-mode))
+
+(use-package all-the-icons-dired
+  :ensure t
+  :hook (dired-mode . all-the-icons-dired-mode))
+  ;; :custom
+  ;; (all-the-icons-dired-monochrome nil))
 
 (defun my-swiper-thing-at-point ()
   "Run swiper-thing-at-point and mark swiper's input."
@@ -774,6 +794,7 @@ If there is no such buffer, start a new `ansi-term bash' with NAME."
          ("\\.md\\'" . gfm-mode)
          ("\\.markdown\\'" . markdown-mode))
   :init
+  ;; sudo apt install libtext-multimarkdown-perl
   (setq markdown-command "multimarkdown") ; C-c C-c p
   (setq markdown-open-command 'my-run-grip)) ; C-c C-c o
 

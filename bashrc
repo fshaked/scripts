@@ -373,6 +373,9 @@ PATH="$HOME/workspace/rust-verification/seahorn-llvm10/build/run/bin:$PATH"
 # Crux (Galuas MIR verifier)
 export CRUX_RUST_LIBRARY_PATH="$HOME/workspace/rust-verification/mir-verifier/rlibs"
 
+# Gem (Ruby)
+PATH="$HOME/.local/share/gem/ruby/2.7.0/bin:$PATH"
+
 ################################################################################
 
 export PATH
