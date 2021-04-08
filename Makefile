@@ -1,6 +1,6 @@
 mkfile_path := $(abspath $(lastword $(MAKEFILE_LIST)))
 
-PLASMAPKG ?= plasmapkg2
+PLASMAPKG ?= $(which plasmapkg2)
 
 ZIP ?= zip
 
@@ -66,6 +66,7 @@ clean: clean-emacs
 ###########################################################################
 
 $(HOME)/.local/share/ktexteditor_snippets:
+	mkdir -p $(dir $@)
 	ln -s "$(dir $(mkfile_path))/ktexteditor_snippets" $@
 
 install-kate-snippets: $(HOME)/.local/share/ktexteditor_snippets
@@ -74,6 +75,7 @@ install: install-kate-snippets
 
 ###########################################################################
 
+ifneq "$(PLASMAPKG)" ""
 toPrimaryScreen.kwinscript:
 	$(ZIP) -r $@ toPrimaryScreen
 .PHONY: toPrimaryScreen.kwinscript
@@ -89,3 +91,5 @@ clean-toPrimaryScreen:
 	$(PLASMAPKG) -t kwinscript -r toPrimaryScreen.kwinscript
 .PHONY: clean-toPrimaryScreen
 clean: clean-toPrimaryScreen
+endif
+
