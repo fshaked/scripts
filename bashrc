@@ -321,6 +321,8 @@ ssh--()
     ssh -t -R 22042:localhost:22 "$@" -- "export MYSSHNAME=$host && bash -l"
 }
 complete -F _ssh ssh--
+# The function `_ssh` is autoloaded (see `complete -pD`), trigger the load:
+_completion_loader ssh || :
 
 ec()
 {

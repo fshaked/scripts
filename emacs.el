@@ -833,8 +833,8 @@ If there is no such buffer, start a new `ansi-term bash' with NAME."
   )
 
 ;; sail-mode
-(let ((file "~/rems/sail/editors/sail-mode.el"))
-  (if (file-exists-p file)
-      (load-file file)))
+;; (let ((file "~/rems/sail/editors/sail-mode.el"))
+;;   (if (file-exists-p file)
+;;       (load-file file)))
 
 ;;; emacs.el ends here
