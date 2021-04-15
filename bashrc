@@ -324,9 +324,9 @@ complete -F _ssh ssh--
 
 ec()
 {
-    if [[ -n "$MYSSHNAME" ]]; then
+    if [[ -n "$SSH_TTY" ]]; then
         # Running over ssh, send back a command to open emacsclient using TRAMP
-        ssh -p 22042 localhost -- emacsclient -n /ssh:${MYSSHNAME}:$PWD/$1
+        ssh -p 22042 localhost -- emacsclient -n /ssh:${HOSTNAME}:$PWD/$1
     else
         emacsclient -n "$@"
     fi
