@@ -482,6 +482,7 @@ forwards ARG times if negative."
   :hook (after-init . ivy-mode)
   :custom
   (counsel-bookmark-avoid-dired t)
+  (ivy-extra-directories nil) ;; Don't show `./` and `../`
   (ivy-use-virtual-buffers t)
   (ivy-count-format "(%d/%d) ")
   (ivy-on-del-error-function #'ignore "Don't close the minibuffer when pressing backspace.")
